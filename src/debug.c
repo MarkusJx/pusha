@@ -1,3 +1,4 @@
+#ifndef WIN32
 #include "pusha/debug.h"
 #include "pusha/error.h"
 #include "pusha/helper.h"
@@ -331,3 +332,4 @@ end:
 	free(request);
 	return ret;
 }
+#endif //WIN32
