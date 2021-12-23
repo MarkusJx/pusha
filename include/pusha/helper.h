@@ -3,6 +3,10 @@
 
 #include <stdlib.h>
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+#   define PUSHA_WINDOWS
+#endif //Windows
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */

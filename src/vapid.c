@@ -1,10 +1,12 @@
+#include "pusha/helper.h"
+
 #include <stdlib.h>
 #include <string.h>
-#ifndef WIN32
+#ifdef PUSHA_WINDOWS
+#include <inttypes.h>
+#else
 #include <unistd.h>
 #include <getopt.h>
-#else
-#include <inttypes.h>
 #endif //WIN32
 
 #include <openssl/bn.h>

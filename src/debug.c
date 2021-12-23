@@ -1,18 +1,26 @@
-#ifndef WIN32
 #include "pusha/debug.h"
 #include "pusha/error.h"
 #include "pusha/helper.h"
 
 #include <stdio.h>
-#include <unistd.h>
 #include <string.h>
+
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
+#ifdef PUSHA_WINDOWS
+#include <winsock2.h>
+#include <ws2tcpip.h>
+
+#pragma comment(lib, "Ws2_32.lib")
+#else
+#include <unistd.h>
 
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <openssl/ssl.h>
-#include <openssl/err.h>
+#endif //PUSHA_WINDOWS
 
 static void print_array(const uint8_t* payload, size_t length, size_t break_line)
 {
@@ -222,6 +230,71 @@ int send_web_push(const char* endpoint,
 	memcpy(host_str, host, sep);
 	host_str[sep] = '\0';
 
+#ifdef PUSHA_WINDOWS
+    int err;
+    WSADATA wsaData;
+    SOCKET sock = (SOCKET) NULL;
+    struct addrinfo *result = NULL, *ptr, hints;
+
+    // Initialize Winsock
+    int res = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (res != 0)
+    {
+        ret = res;
+        PUSHA_ERROR("*- WSAStartup failed\n")
+        goto end;
+    }
+
+    ZeroMemory(&hints, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+
+    // Resolve the server address and port
+    res = getaddrinfo(host_str, "443", &hints, &result);
+    if (res != 0)
+    {
+        WSACleanup();
+        PUSHA_ERROR("*- getaddrinfo failed\n")
+        ret = res;
+        goto end;
+    }
+
+    // Attempt to connect to an address until one succeeds
+    for (ptr = result; ptr != NULL; ptr = ptr->ai_next)
+    {
+        // Create a SOCKET for connecting to server
+        sock = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
+        if (sock == INVALID_SOCKET)
+        {
+            WSACleanup();
+            PUSHA_ERROR("*- socket failed\n")
+            ret = PUSHA_ERROR_CONNECT;
+            goto end;
+        }
+
+        // Connect to server.
+        res = connect(sock, ptr->ai_addr, (int) ptr->ai_addrlen);
+        if (res == SOCKET_ERROR)
+        {
+            sock = (SOCKET) NULL;
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    freeaddrinfo(result);
+
+    if (sock == (SOCKET) NULL)
+    {
+        WSACleanup();
+        PUSHA_ERROR("*- Connect error\n");
+        ret = PUSHA_ERROR_CONNECT;
+        goto end;
+    }
+#else
 	struct addrinfo hints = {}, *res, *result;
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
@@ -262,12 +335,14 @@ int send_web_push(const char* endpoint,
 	}
 	freeaddrinfo(result);
 
-	if(res == NULL)
+    if(res == NULL)
 	{
 		PUSHA_ERROR("*- Connect error\n");
 		ret = PUSHA_ERROR_CONNECT;
 		goto end;
 	}
+#endif //PUSHA_WINDOWS
+
 	PUSHA_PRINT(verbose, "*+ Connected\n");
 
 	SSL_library_init();
@@ -281,7 +356,7 @@ int send_web_push(const char* endpoint,
 		PUSHA_ERROR("*- Error creating SSL.\n");
 		ret = PUSHA_ERROR_SSL_CREATE;
 		SSL_CTX_free(ctx);
-		goto end;
+		goto sock_end;
 	}
 	SSL_set_fd(ssl, sock);
 	err = SSL_connect(ssl);
@@ -297,7 +372,7 @@ int send_web_push(const char* endpoint,
 	 * Sending packet
 	 */
 	PUSHA_PRINT(verbose, "* Sending SSL packet\n");
-	err = SSL_write(ssl, request, request_len);
+	err = SSL_write(ssl, request, (int) request_len);
 	if (err < 0)
 	{
 		PUSHA_ERROR("*- Error sending SSL packet [%d]\n", err);
@@ -327,9 +402,14 @@ ssl_end:
 	SSL_shutdown(ssl);
 	SSL_free(ssl);
 	SSL_CTX_free(ctx);
+sock_end:
+#ifdef PUSHA_WINDOWS
+    closesocket(sock);
+    WSACleanup();
+#else
 	close(sock);
+#endif //PUSHA_WINDOWS
 end:
 	free(request);
 	return ret;
 }
-#endif //WIN32
