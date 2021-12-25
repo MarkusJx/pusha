@@ -22,6 +22,10 @@ jobs:
       run: |
         git submodule init
         git submodule update
+        
+    - name: Install OpenSSL macOs
+      if: ${{matrix.os}} == 'macOs-latest'
+      run: brew install openssl
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
