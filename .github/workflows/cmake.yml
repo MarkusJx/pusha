@@ -16,9 +16,9 @@ jobs:
         include:
           - os: ubuntu-latest
           - os: windows-latest
-            BOOST_ROOT: 'C:/Program Files/OpenSSL'
+            OPENSSL_ROOT: 'C:/Program Files/OpenSSL'
           - os: macOs-latest
-            BOOST_ROOT: /usr/local/opt/openssl@1.1
+            OPENSSL_ROOT: /usr/local/opt/openssl@1.1
 
     runs-on: ${{matrix.os}}
 
@@ -32,7 +32,7 @@ jobs:
     - name: Configure CMake
       run: cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
       env:
-        BOOST_ROOT_DIR: ${{matrix.BOOST_ROOT}}
+        OPENSSL_ROOT_DIR: ${{matrix.OPENSSL_ROOT}}
 
     - name: Build
       run: cmake --build build --config ${{env.BUILD_TYPE}}
