@@ -13,8 +13,12 @@ jobs:
   build:
     strategy:
       matrix:
-        #os: [ubuntu-latest, windows-latest, macOs-latest]
-        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+          - os: windows-latest
+          - os: macOs-latest
+            OPENSSL_ROOT: /usr/local/opt/openssl@1.1
+
     runs-on: ${{matrix.os}}
 
     steps:
@@ -23,13 +27,15 @@ jobs:
       run: |
         git submodule init
         git submodule update
-        
-    - name: Install OpenSSL macOs
-      if: ${{matrix.os}} == 'macOs-latest'
-      run: brew install openssl
+      
+    - name: Install OpenSSL Windows
+      run: choco install openssl
+      if: ${{matrix.os == 'windows-latest'}}
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      env:
+        OPENSSL_ROOT_DIR: ${{matrix.OPENSSL_ROOT}}
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      run: cmake --build build --config ${{env.BUILD_TYPE}}
