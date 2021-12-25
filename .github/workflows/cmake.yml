@@ -31,7 +31,7 @@ jobs:
         
     - run: ls
       if: ${{matrix.os == 'windows-latest'}}
-      working-directory: ${{OPENSSL_ROOT}}
+      working-directory: ${{matrox.OPENSSL_ROOT}}
 
     - name: Configure CMake
       run: cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
