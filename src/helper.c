@@ -2,8 +2,7 @@
 #include <string.h>
 
 //https://stackoverflow.com/a/25705264
-static char
-*strnstr(const char *haystack, const char *needle, size_t len)
+char *strnstr(const char *haystack, const char *needle, size_t len)
 {
 	int i;
 	size_t needle_len;

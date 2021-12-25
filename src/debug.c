@@ -1,6 +1,14 @@
+#include "pusha/helper.h"
+
+#ifdef PUSHA_WINDOWS
+#include <winsock2.h>
+#include <ws2tcpip.h>
+
+#pragma comment(lib, "Ws2_32.lib")
+#endif //PUSHA_WINDOWS
+
 #include "pusha/debug.h"
 #include "pusha/error.h"
-#include "pusha/helper.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -8,12 +16,7 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-#ifdef PUSHA_WINDOWS
-#include <winsock2.h>
-#include <ws2tcpip.h>
-
-#pragma comment(lib, "Ws2_32.lib")
-#else
+#ifndef PUSHA_WINDOWS
 #include <unistd.h>
 
 #include <sys/socket.h>
