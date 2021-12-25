@@ -13,8 +13,7 @@ jobs:
   build:
     strategy:
       matrix:
-        #os: [ubuntu-latest, windows-latest, macOs-latest]
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macOs-latest]
     runs-on: ${{matrix.os}}
 
     steps:
@@ -25,7 +24,7 @@ jobs:
         git submodule update
         
     - name: Install OpenSSL macOs
-      if: ${{matrix.os}} == 'macOs-latest'
+      if: ${{matrix.os == 'macOs-latest'}}
       run: brew install openssl
 
     - name: Configure CMake
