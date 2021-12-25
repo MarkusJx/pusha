@@ -29,13 +29,13 @@ key::key(const key& ec_key) noexcept
 	key_ = EC_KEY_dup(ec_key.get_key());
 }
 
-/*key::key(key&& ec_key) noexcept
+key::key(key&& ec_key) noexcept
 {
 	if(!ec_key.get_key()) return;
 	key_ = EC_KEY_dup(ec_key.get_key());
 	EC_KEY_free(ec_key.get_key());
-	ec_key.key_ = NULL;
-}*/
+	ec_key.key_ = nullptr;
+}
 
 key::key(EC_KEY* key) noexcept
 	: key_(key)
@@ -47,7 +47,7 @@ key::key(EC_KEY* key, std::error_code& ec) noexcept
 	if(!check())
 	{
 		ec = make_error_code(errc::invalid_key);
-		key_ = NULL;
+		key_ = nullptr;
 	}
 }
 
@@ -64,13 +64,13 @@ bool key::check() const noexcept
 bool key::import(const std::filesystem::path& path) noexcept
 {
 	key_ = import_private_key_pem_file(path.u8string().c_str());
-	return key_ ? true : false;
+	return key_ != nullptr;
 }
 
 bool key::import(const char* b64key) noexcept
 {
 	key_ = import_private_key_base64(b64key);
-	return key_ ? true : false;
+	return key_ != nullptr;
 }
 
 bool key::import(std::string const& b64key) noexcept

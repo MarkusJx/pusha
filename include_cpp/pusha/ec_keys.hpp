@@ -17,8 +17,7 @@ class key{
 		key(const char*, std::error_code&) noexcept;
 		key(std::string const&, std::error_code&) noexcept;
 		key(const key& ec_key) noexcept;
-        // This is currently broken, so just don't use it
-		key(key&& ec_key) noexcept = delete;
+		key(key&& ec_key) noexcept;
 		key(EC_KEY* key) noexcept;
 		key(EC_KEY* key, std::error_code&) noexcept;
 

@@ -13,8 +13,7 @@ namespace pusha{
 class notify{
 	public:
 		notify(key const&, std::string_view const& subscriber);
-        // Currently, can't move keys
-		notify(key&&, std::string_view const& subscriber) = delete;
+		notify(key&&, std::string_view const& subscriber);
 		notify(EC_KEY* key, std::string_view const& subscriber);
 
 		std::string_view subscriber() const noexcept;
