@@ -16,9 +16,8 @@ jobs:
         include:
           - os: ubuntu-latest
           - os: windows-latest
-            OPENSSL_ROOT: 'C:/Program Files/OpenSSL'
-          #- os: macOs-latest
-          #  OPENSSL_ROOT: /usr/local/opt/openssl@1.1
+          - os: macOs-latest
+            OPENSSL_ROOT: /usr/local/opt/openssl@1.1
 
     runs-on: ${{matrix.os}}
 
@@ -28,10 +27,6 @@ jobs:
       run: |
         git submodule init
         git submodule update
-        
-    - run: ls
-      if: ${{matrix.os == 'windows-latest'}}
-      working-directory: ${{matrix.OPENSSL_ROOT}}
       
     - name: Install OpenSSL Windows
       run: choco install openssl
